@@ -1,0 +1,37 @@
+# build outputs
+*.o
+*.a
+*.so
+*.bin
+*.elf
+*.map
+*.out
+
+# executable files
+gdc_pmf_ive_fusion
+gdc_pmf_test
+opencv_fusion_test
+sample_vio_*
+
+# raw video and large captures
+*.yuv
+*.raw
+*.nv21
+
+# archives
+*.tar
+*.tar.gz
+*.zip
+
+# temporary files
+*.bak
+*.tmp
+*~
+.DS_Store
+
+# SDK and official output directories
+Hi3559AV100_SDK/
+mpp/
+mpp_arm/out/
+build/
+build_*/

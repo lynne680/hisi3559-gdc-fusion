@@ -1,0 +1,70 @@
+========== check paths ==========
+CUR_DIR=/home/xia/Hi3559AV100_SDK/Hi3559AV100_SDK_V2.0.3.1/mpp_arm/sample/gdc
+MPP_INC=/home/xia/Hi3559AV100_SDK/Hi3559AV100_SDK_V2.0.3.1/mpp_arm/sample/gdc/../../out/linux/multi-core/include
+MPP_LIB=/home/xia/Hi3559AV100_SDK/Hi3559AV100_SDK_V2.0.3.1/mpp_arm/sample/gdc/../../out/linux/multi-core/lib
+COMMON_DIR=/home/xia/Hi3559AV100_SDK/Hi3559AV100_SDK_V2.0.3.1/mpp_arm/sample/gdc/../common
+========== compile gdc.c ==========
+========== compile sample common ==========
+/home/xia/Hi3559AV100_SDK/Hi3559AV100_SDK_V2.0.3.1/mpp_arm/sample/gdc/../common/sample_comm_isp.c: In function 'SAMPLE_COMM_All_ISP_Stop':
+/home/xia/Hi3559AV100_SDK/Hi3559AV100_SDK_V2.0.3.1/mpp_arm/sample/gdc/../common/sample_comm_isp.c:503:17: warning: iteration 8 invokes undefined behavior [-Waggressive-loop-optimizations]
+     if (g_IspPid[IspDev])
+         ~~~~~~~~^~~~~~~~
+/home/xia/Hi3559AV100_SDK/Hi3559AV100_SDK_V2.0.3.1/mpp_arm/sample/gdc/../common/sample_comm_isp.c:520:5: note: within this loop
+     for (IspDev = 0; IspDev < ISP_MAX_PIPE_NUM; IspDev++)
+     ^~~
+========== prepare hisi libs ==========
+========== link ==========
+========== check output ==========
+gdc_pmf_ive_fusion: ELF 64-bit LSB executable, ARM aarch64, version 1 (SYSV), dynamically linked, interpreter /lib/ld-linux-aarch64.so.1, for GNU/Linux 3.7.0, with debug_info, not stripped
+ 0x0000000000000001 (NEEDED)             Shared library: [libVoiceEngine.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [lib_hiae.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [lib_hiawb.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [lib_hiawb_natura.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [lib_hicalcflicker.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [lib_hidehaze.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [lib_hidrc.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [lib_hiir_auto.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [lib_hildci.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libaacdec.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libaacenc.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libdnvqe.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libdpu_match.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libdpu_rect.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libdsp.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhdmi.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhi_cipher.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhiavslut.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhifisheyecalibrate.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhive_AEC.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhive_AGC.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhive_ANR.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhive_EQ.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhive_HPF.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhive_RES.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhive_common.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libhive_record.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libisp.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libive.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libmd.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libmpi.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libnnie.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libpciv.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libpos_query.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libsecurec.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libsns_imx277_slvs.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libsns_imx290.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libsns_imx334.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libsns_imx334_slave.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libsns_imx477.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libsns_sharp8k.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libsvpruntime.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libtde.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libupvqe.so]
+ 0x0000000000000001 (NEEDED)             Shared library: [libstdc++.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [libpthread.so.0]
+ 0x0000000000000001 (NEEDED)             Shared library: [libdl.so.2]
+ 0x0000000000000001 (NEEDED)             Shared library: [librt.so.1]
+ 0x0000000000000001 (NEEDED)             Shared library: [libm.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [libc.so.6]
+ 0x0000000000000001 (NEEDED)             Shared library: [ld-linux-aarch64.so.1]
+========== build success ==========
