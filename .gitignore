@@ -35,3 +35,8 @@ mpp/
 mpp_arm/out/
 build/
 build_*/
+fusion_dataset/
+fusion_dataset_*/
+fusion_dataset_train/
+*.yuv
+*.zip
