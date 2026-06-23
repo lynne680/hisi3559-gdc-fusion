@@ -1,0 +1,4 @@
+params: 71154
+trainable params: 71154
+avg inference time on CPU: 26.583 ms
+fps on CPU: 37.62

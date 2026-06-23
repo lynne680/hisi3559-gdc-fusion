@@ -40,3 +40,23 @@ fusion_dataset_*/
 fusion_dataset_train/
 *.yuv
 *.zip
+
+# MM5 generated datasets and debug outputs
+mm5_fusion_dataset*/
+mm5_annotation_debug_*/
+
+# Experiment outputs
+train_outputs/
+final_results/
+
+# Raw / large intermediate files
+*.yuv
+*.raw
+*.zip
+*.hex
+*.y
+
+# Python cache
+__pycache__/
+*/__pycache__/
+*.pyc
