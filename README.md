@@ -1,4 +1,4 @@
-# Hi3559AV100 GDC PMF + IVE 双摄视频融合项目
+# Hi3559AV100 GDC PMF + IVE 三摄视频融合项目
 
 ## 1. 项目目标
 
