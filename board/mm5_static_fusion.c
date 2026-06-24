@@ -15,6 +15,9 @@ static uint8_t g_mask[N];
 static uint8_t g_soft_mask[N];
 static uint8_t g_fused[N];
 
+/* Integral image size: (H+1) x (W+1) */
+static uint32_t g_integral[(H + 1) * (W + 1)];
+
 static double get_time_ms(void)
 {
     struct timespec ts;
@@ -72,31 +75,49 @@ static int write_pgm(const char *path, uint8_t *buf)
     return 0;
 }
 
-static void make_soft_mask_11x11(const uint8_t *mask, uint8_t *soft)
+/*
+ * Optimized 11x11 soft mask by integral image.
+ * It keeps the same boundary rule as the original implementation:
+ * window is clipped at image borders.
+ */
+static void make_soft_mask_11x11_integral(const uint8_t *mask, uint8_t *soft)
 {
-    int x, y, dx, dy;
+    int x, y;
+
+    memset(g_integral, 0, sizeof(g_integral));
+
+    for (y = 1; y <= H; y++)
+    {
+        uint32_t row_sum = 0;
+        for (x = 1; x <= W; x++)
+        {
+            row_sum += mask[(y - 1) * W + (x - 1)];
+            g_integral[y * (W + 1) + x] =
+                g_integral[(y - 1) * (W + 1) + x] + row_sum;
+        }
+    }
 
     for (y = 0; y < H; y++)
     {
+        int y1 = y - 5;
+        int y2 = y + 5;
+        if (y1 < 0) y1 = 0;
+        if (y2 >= H) y2 = H - 1;
+
         for (x = 0; x < W; x++)
         {
-            int sum = 0;
-            int count = 0;
+            int x1 = x - 5;
+            int x2 = x + 5;
+            if (x1 < 0) x1 = 0;
+            if (x2 >= W) x2 = W - 1;
 
-            for (dy = -5; dy <= 5; dy++)
-            {
-                int yy = y + dy;
-                if (yy < 0 || yy >= H) continue;
+            uint32_t A = g_integral[y1 * (W + 1) + x1];
+            uint32_t B = g_integral[y1 * (W + 1) + (x2 + 1)];
+            uint32_t C = g_integral[(y2 + 1) * (W + 1) + x1];
+            uint32_t D = g_integral[(y2 + 1) * (W + 1) + (x2 + 1)];
 
-                for (dx = -5; dx <= 5; dx++)
-                {
-                    int xx = x + dx;
-                    if (xx < 0 || xx >= W) continue;
-
-                    sum += mask[yy * W + xx];
-                    count++;
-                }
-            }
+            uint32_t sum = D - B - C + A;
+            uint32_t count = (uint32_t)(x2 - x1 + 1) * (uint32_t)(y2 - y1 + 1);
 
             soft[y * W + x] = (uint8_t)(sum / count);
         }
@@ -164,7 +185,7 @@ int main(int argc, char *argv[])
     snprintf(path_out_y, sizeof(path_out_y), "%s/fused_%s.y", dir, sid);
     snprintf(path_out_pgm, sizeof(path_out_pgm), "%s/fused_%s.pgm", dir, sid);
 
-    printf("MM5 static fusion test with timing\n");
+    printf("MM5 static fusion test with timing, integral mask version\n");
     printf("dir: %s\n", dir);
     printf("sample: %s\n", sid);
 
@@ -177,7 +198,7 @@ int main(int argc, char *argv[])
 
     t1 = get_time_ms();
 
-    make_soft_mask_11x11(g_mask, g_soft_mask);
+    make_soft_mask_11x11_integral(g_mask, g_soft_mask);
 
     t2 = get_time_ms();
 
