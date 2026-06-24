@@ -1,0 +1,2 @@
+sample,prob_mae,prob_rmse,prob_max_abs,mask_diff_pixels,total_pixels,mask_exact_match,net_ms,total_ms
+000000,3.7251879358990436e-09,3.7790584883623524e-08,1.4007091522216797e-06,0,50176,True,7291.798,7366.657

@@ -1,0 +1,2 @@
+sample,mae,rmse,max_abs_diff,diff_pixels,total_pixels,exact_match,description
+000000_nn,0.000000,0.000000,0,0,50176,True,Board TinyFusionMaskNet mask followed by board fusion
