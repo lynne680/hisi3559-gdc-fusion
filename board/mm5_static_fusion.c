@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <time.h>
 
 #define W 224
 #define H 224
@@ -13,6 +14,13 @@ static uint8_t g_uv[N];
 static uint8_t g_mask[N];
 static uint8_t g_soft_mask[N];
 static uint8_t g_fused[N];
+
+static double get_time_ms(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1000000.0;
+}
 
 static int read_raw(const char *path, uint8_t *buf, int size)
 {
@@ -95,11 +103,9 @@ static void make_soft_mask_11x11(const uint8_t *mask, uint8_t *soft)
     }
 }
 
-static void fuse_image(void)
+static void fuse_image_only(void)
 {
     int i;
-
-    make_soft_mask_11x11(g_mask, g_soft_mask);
 
     for (i = 0; i < N; i++)
     {
@@ -116,7 +122,6 @@ static void fuse_image(void)
         int target = (50 * rgb + 40 * thermal + 10 * uv + 50) / 100;
 
         int m = g_soft_mask[i];
-
         int out = (base * (255 - m) + target * m + 127) / 255;
 
         if (out < 0) out = 0;
@@ -138,6 +143,9 @@ int main(int argc, char *argv[])
     char path_out_y[1024];
     char path_out_pgm[1024];
 
+    double t0, t1, t2, t3, t4, t5;
+    double read_ms, mask_ms, fuse_ms, write_ms, total_ms;
+
     if (argc < 3)
     {
         printf("usage: %s <data_dir> <sample_id>\n", argv[0]);
@@ -156,23 +164,50 @@ int main(int argc, char *argv[])
     snprintf(path_out_y, sizeof(path_out_y), "%s/fused_%s.y", dir, sid);
     snprintf(path_out_pgm, sizeof(path_out_pgm), "%s/fused_%s.pgm", dir, sid);
 
-    printf("MM5 static fusion test\n");
+    printf("MM5 static fusion test with timing\n");
     printf("dir: %s\n", dir);
     printf("sample: %s\n", sid);
+
+    t0 = get_time_ms();
 
     if (read_raw(path_rgb, g_rgb, N) != 0) return -1;
     if (read_raw(path_thermal, g_thermal, N) != 0) return -1;
     if (read_raw(path_uv, g_uv, N) != 0) return -1;
     if (read_raw(path_mask, g_mask, N) != 0) return -1;
 
-    fuse_image();
+    t1 = get_time_ms();
+
+    make_soft_mask_11x11(g_mask, g_soft_mask);
+
+    t2 = get_time_ms();
+
+    fuse_image_only();
+
+    t3 = get_time_ms();
 
     if (write_raw(path_out_y, g_fused, N) != 0) return -1;
     if (write_pgm(path_out_pgm, g_fused) != 0) return -1;
 
+    t4 = get_time_ms();
+    t5 = t4;
+
+    read_ms = t1 - t0;
+    mask_ms = t2 - t1;
+    fuse_ms = t3 - t2;
+    write_ms = t4 - t3;
+    total_ms = t5 - t0;
+
     printf("fusion done\n");
     printf("out y:   %s\n", path_out_y);
     printf("out pgm: %s\n", path_out_pgm);
+
+    printf("\n[TIME]\n");
+    printf("read_ms  = %.3f\n", read_ms);
+    printf("mask_ms  = %.3f\n", mask_ms);
+    printf("fuse_ms  = %.3f\n", fuse_ms);
+    printf("write_ms = %.3f\n", write_ms);
+    printf("total_ms = %.3f\n", total_ms);
+    printf("fps_est  = %.2f\n", 1000.0 / total_ms);
 
     return 0;
 }

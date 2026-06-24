@@ -6,11 +6,12 @@ OUT_DIR := /home/xia/nfs/mm5_board_test
 
 CC := aarch64-himix100-linux-gcc
 CFLAGS := -O2 -Wall
+LDLIBS := -lrt
 
 all: $(TARGET)
 
 $(TARGET): $(SRCS)
->$(CC) $(CFLAGS) $^ -o $@
+>$(CC) $(CFLAGS) $^ -o $@ $(LDLIBS)
 
 install: $(TARGET)
 >mkdir -p $(OUT_DIR)
