@@ -15,7 +15,6 @@ static uint8_t g_mask[N];
 static uint8_t g_soft_mask[N];
 static uint8_t g_fused[N];
 
-/* Integral image size: (H+1) x (W+1) */
 static uint32_t g_integral[(H + 1) * (W + 1)];
 
 static double get_time_ms(void)
@@ -75,11 +74,6 @@ static int write_pgm(const char *path, uint8_t *buf)
     return 0;
 }
 
-/*
- * Optimized 11x11 soft mask by integral image.
- * It keeps the same boundary rule as the original implementation:
- * window is clipped at image borders.
- */
 static void make_soft_mask_11x11_integral(const uint8_t *mask, uint8_t *soft)
 {
     int x, y;
@@ -134,11 +128,6 @@ static void fuse_image_only(void)
         int thermal = g_thermal[i];
         int uv = g_uv[i];
 
-        /*
-         * Final weights:
-         * base   = 0.94 RGB + 0.04 Thermal + 0.02 UV
-         * target = 0.50 RGB + 0.40 Thermal + 0.10 UV
-         */
         int base = (94 * rgb + 4 * thermal + 2 * uv + 50) / 100;
         int target = (50 * rgb + 40 * thermal + 10 * uv + 50) / 100;
 
@@ -164,18 +153,33 @@ int main(int argc, char *argv[])
     char path_out_y[1024];
     char path_out_pgm[1024];
 
+    int repeat = 1;
+    int r;
+
     double t0, t1, t2, t3, t4, t5;
-    double read_ms, mask_ms, fuse_ms, write_ms, total_ms;
+    double read_ms, write_ms;
+    double mask_sum_ms = 0.0;
+    double fuse_sum_ms = 0.0;
+    double mask_avg_ms;
+    double fuse_avg_ms;
+    double alg_avg_ms;
+    double total_once_est_ms;
 
     if (argc < 3)
     {
-        printf("usage: %s <data_dir> <sample_id>\n", argv[0]);
-        printf("example: %s /get/mm5_board_test 000000\n", argv[0]);
+        printf("usage: %s <data_dir> <sample_id> [repeat]\n", argv[0]);
+        printf("example: %s /get/mm5_board_test 000000 20\n", argv[0]);
         return -1;
     }
 
     snprintf(dir, sizeof(dir), "%s", argv[1]);
     snprintf(sid, sizeof(sid), "%s", argv[2]);
+
+    if (argc >= 4)
+    {
+        repeat = atoi(argv[3]);
+        if (repeat <= 0) repeat = 1;
+    }
 
     snprintf(path_rgb, sizeof(path_rgb), "%s/rgb_%s.y", dir, sid);
     snprintf(path_thermal, sizeof(path_thermal), "%s/thermal_%s.y", dir, sid);
@@ -185,9 +189,10 @@ int main(int argc, char *argv[])
     snprintf(path_out_y, sizeof(path_out_y), "%s/fused_%s.y", dir, sid);
     snprintf(path_out_pgm, sizeof(path_out_pgm), "%s/fused_%s.pgm", dir, sid);
 
-    printf("MM5 static fusion test with timing, integral mask version\n");
+    printf("MM5 static fusion repeat timing, integral mask version\n");
     printf("dir: %s\n", dir);
     printf("sample: %s\n", sid);
+    printf("repeat: %d\n", repeat);
 
     t0 = get_time_ms();
 
@@ -198,37 +203,45 @@ int main(int argc, char *argv[])
 
     t1 = get_time_ms();
 
-    make_soft_mask_11x11_integral(g_mask, g_soft_mask);
+    for (r = 0; r < repeat; r++)
+    {
+        t2 = get_time_ms();
+        make_soft_mask_11x11_integral(g_mask, g_soft_mask);
+        t3 = get_time_ms();
 
-    t2 = get_time_ms();
+        fuse_image_only();
+        t4 = get_time_ms();
 
-    fuse_image_only();
-
-    t3 = get_time_ms();
+        mask_sum_ms += (t3 - t2);
+        fuse_sum_ms += (t4 - t3);
+    }
 
     if (write_raw(path_out_y, g_fused, N) != 0) return -1;
     if (write_pgm(path_out_pgm, g_fused) != 0) return -1;
 
-    t4 = get_time_ms();
-    t5 = t4;
+    t5 = get_time_ms();
 
     read_ms = t1 - t0;
-    mask_ms = t2 - t1;
-    fuse_ms = t3 - t2;
-    write_ms = t4 - t3;
-    total_ms = t5 - t0;
+    write_ms = t5 - t4;
+
+    mask_avg_ms = mask_sum_ms / repeat;
+    fuse_avg_ms = fuse_sum_ms / repeat;
+    alg_avg_ms = mask_avg_ms + fuse_avg_ms;
+    total_once_est_ms = read_ms + alg_avg_ms + write_ms;
 
     printf("fusion done\n");
     printf("out y:   %s\n", path_out_y);
     printf("out pgm: %s\n", path_out_pgm);
 
-    printf("\n[TIME]\n");
-    printf("read_ms  = %.3f\n", read_ms);
-    printf("mask_ms  = %.3f\n", mask_ms);
-    printf("fuse_ms  = %.3f\n", fuse_ms);
-    printf("write_ms = %.3f\n", write_ms);
-    printf("total_ms = %.3f\n", total_ms);
-    printf("fps_est  = %.2f\n", 1000.0 / total_ms);
+    printf("\n[TIME_AVG]\n");
+    printf("read_ms_once       = %.3f\n", read_ms);
+    printf("mask_ms_avg        = %.3f\n", mask_avg_ms);
+    printf("fuse_ms_avg        = %.3f\n", fuse_avg_ms);
+    printf("alg_ms_avg         = %.3f\n", alg_avg_ms);
+    printf("write_ms_once      = %.3f\n", write_ms);
+    printf("total_once_est_ms  = %.3f\n", total_once_est_ms);
+    printf("fps_est_with_io    = %.2f\n", 1000.0 / total_once_est_ms);
+    printf("fps_est_alg_only   = %.2f\n", 1000.0 / alg_avg_ms);
 
     return 0;
 }
